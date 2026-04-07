@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: usersdb
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/users.sql:/docker-entrypoint-initdb.d/01-users.sql
+      - ./db/notes.sql:/docker-entrypoint-initdb.d/02-notes.sql
+    networks:
+      - notes-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  user-service:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:user-service-${IMAGE_TAG}
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASS: ${DB_PASS}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - notes-net
+
+  notes-service:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:notes-service-${IMAGE_TAG}
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASS: ${DB_PASS}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - notes-net
+
+  api-gateway:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:api-gateway-${IMAGE_TAG}
+    environment:
+      USER_SERVICE: http://user-service:3001
+      NOTES_SERVICE: http://notes-service:3002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - notes-service
+    networks:
+      - notes-net
+
+  frontend:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:frontend-${IMAGE_TAG}
+    ports:
+      - "80:80"
+    networks:
+      - notes-net
+
+networks:
+  notes-net:
+
+volumes:
+  mysql_data:

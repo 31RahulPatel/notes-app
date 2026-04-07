@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        sonarScanner "sonar-scanner"
+    }
+
     environment {
         AWS_REGION      = "us-east-1"
         AWS_ACCOUNT_ID  = "836548370285"
@@ -8,7 +12,6 @@ pipeline {
         ECR_REPO        = "notes-app"
         IMAGE_TAG       = "${BUILD_NUMBER}"
         EC2_HOST        = credentials("EC2_HOST")
-        SONAR_TOKEN     = credentials("sonar-token")
         DB_PASS         = credentials("DB_PASS")
     }
 
@@ -25,13 +28,15 @@ pipeline {
         stage("SonarQube Analysis") {
             steps {
                 withSonarQubeEnv("SonarQube") {
-                    sh """
-                        sonar-scanner \
-                          -Dsonar.projectKey=notes-app \
-                          -Dsonar.sources=. \
-                          -Dsonar.exclusions=**/node_modules/**,**/package-lock.json \
-                          -Dsonar.login=${SONAR_TOKEN}
-                    """
+                    withCredentials([string(credentialsId: "sonar-token", variable: "SONAR_TOKEN")]) {
+                        sh '''
+                            sonar-scanner \
+                              -Dsonar.projectKey=notes-app \
+                              -Dsonar.sources=. \
+                              -Dsonar.exclusions=**/node_modules/**,**/package-lock.json \
+                              -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    }
                 }
             }
         }

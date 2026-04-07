@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         AWS_REGION     = "us-east-1"
-        AWS_ACCOUNT_ID = "836548370285"
-        ECR_REGISTRY   = "836548370285.dkr.ecr.us-east-1.amazonaws.com"
+        AWS_ACCOUNT_ID = credentials("AWS_ACCOUNT_ID")
+        ECR_REGISTRY   = "${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
         ECR_REPO       = "notes-app"
         IMAGE_TAG      = "${env.BUILD_NUMBER}"
     }

@@ -1,0 +1,8 @@
+CREATE DATABASE notesdb;
+USE notesdb;
+CREATE TABLE notes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  text VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

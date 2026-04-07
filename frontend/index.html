@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Microservices Notes App</title>
+</head>
+<body>
+  <h1>Notes App</h1>
+
+  <input id="regUser" placeholder="username" />
+  <input id="regPass" placeholder="password" />
+  <button onclick="register()">Register</button>
+
+  <input id="loginUser" placeholder="username" />
+  <input id="loginPass" placeholder="password" />
+  <button onclick="login()">Login</button>
+
+  <input id="noteInput" placeholder="note" />
+  <button onclick="addNote()">Add</button>
+
+  <ul id="notesList"></ul>
+
+  <script>
+    const API = "http://<EC2-PUBLIC-IP>:3000";
+    let userId = null;
+
+    async function register() {
+      await fetch(`${API}/register`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          username: regUser.value,
+          password: regPass.value
+        })
+      });
+      alert("Registered");
+    }
+
+    async function login() {
+      const res = await fetch(`${API}/login`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          username: loginUser.value,
+          password: loginPass.value
+        })
+      });
+      const data = await res.json();
+      userId = data.userId;
+      fetchNotes();
+    }
+
+    async function addNote() {
+      await fetch(`${API}/notes`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          userId,
+          text: noteInput.value
+        })
+      });
+      fetchNotes();
+    }
+
+    async function fetchNotes() {
+      const res = await fetch(`${API}/notes/${userId}`);
+      const data = await res.json();
+
+      notesList.innerHTML = "";
+      data.forEach(n => {
+        const li = document.createElement("li");
+        li.innerHTML = `${n.text} <button onclick="deleteNote(${n.id})">Delete</button>`;
+        notesList.appendChild(li);
+      });
+    }
+
+    async function deleteNote(id) {
+      await fetch(`${API}/notes/${id}`, { method: "DELETE" });
+      fetchNotes();
+    }
+  </script>
+</body>
+</html>

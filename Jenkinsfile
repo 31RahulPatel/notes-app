@@ -3,12 +3,12 @@ pipeline {
 
     environment {
         AWS_REGION      = "us-east-1"
-        AWS_ACCOUNT_ID  = credentials("AWS_ACCOUNT_ID")
-        ECR_REGISTRY    = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        AWS_ACCOUNT_ID  = "836548370285"
+        ECR_REGISTRY    = "836548370285.dkr.ecr.us-east-1.amazonaws.com"
         ECR_REPO        = "notes-app"
         IMAGE_TAG       = "${BUILD_NUMBER}"
         EC2_HOST        = credentials("EC2_HOST")
-        SONAR_TOKEN     = credentials("SONAR_TOKEN")
+        SONAR_TOKEN     = credentials("sonar-token")
         DB_PASS         = credentials("DB_PASS")
     }
 
@@ -106,7 +106,7 @@ pipeline {
                             export DB_PASS=${DB_PASS}
 
                             aws ecr get-login-password --region ${AWS_REGION} \
-                                | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                                | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
                             cd /home/ubuntu/notes-app
                             git pull origin main

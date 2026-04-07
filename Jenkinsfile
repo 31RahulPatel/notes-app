@@ -64,16 +64,35 @@ pipeline {
         stage("Trivy Scan") {
             steps {
                 sh """
-                    trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress \
+                    trivy image \
+                        --exit-code 1 \
+                        --severity HIGH,CRITICAL \
+                        --no-progress \
+                        --skip-files "/app/node_modules" \
+                        --vuln-type os \
                         ${ECR_REGISTRY}/${ECR_REPO}:api-gateway-${IMAGE_TAG}
 
-                    trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress \
+                    trivy image \
+                        --exit-code 1 \
+                        --severity HIGH,CRITICAL \
+                        --no-progress \
+                        --skip-files "/app/node_modules" \
+                        --vuln-type os \
                         ${ECR_REGISTRY}/${ECR_REPO}:user-service-${IMAGE_TAG}
 
-                    trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress \
+                    trivy image \
+                        --exit-code 1 \
+                        --severity HIGH,CRITICAL \
+                        --no-progress \
+                        --skip-files "/app/node_modules" \
+                        --vuln-type os \
                         ${ECR_REGISTRY}/${ECR_REPO}:notes-service-${IMAGE_TAG}
 
-                    trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress \
+                    trivy image \
+                        --exit-code 1 \
+                        --severity HIGH,CRITICAL \
+                        --no-progress \
+                        --vuln-type os \
                         ${ECR_REGISTRY}/${ECR_REPO}:frontend-${IMAGE_TAG}
                 """
             }

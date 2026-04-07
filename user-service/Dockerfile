@@ -1,4 +1,5 @@
-FROM node:18-alpine
+FROM node:lts-alpine
+RUN apk update && apk upgrade --no-cache
 WORKDIR /app
 COPY package.json .
 RUN npm install --production

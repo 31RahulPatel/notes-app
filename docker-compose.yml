@@ -11,9 +11,10 @@ services:
     networks:
       - notes-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASS}"]
       interval: 10s
-      retries: 5
+      timeout: 5s
+      retries: 10
 
   user-service:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:user-service-${IMAGE_TAG}
